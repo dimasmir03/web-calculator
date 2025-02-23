@@ -1,0 +1,4 @@
+github.com/dimasmir03/Calc_GO v0.0.0-20241225120801-ce9b4200a417 h1:5gnPTah7/1A3/7xB4fIUV47BaGbFuTBorGcoF3YExjQ=
+github.com/dimasmir03/Calc_GO v0.0.0-20241225120801-ce9b4200a417/go.mod h1:sxdVXqAPaj4wHgL5vVAkVegn43kNEkpx7VVCP0Nj8u4=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=

@@ -1,0 +1,292 @@
+{
+	"info": {
+		"_postman_id": "cd1d92a2-d2cb-4848-a353-79d3973441f7",
+		"name": "Web_Calc_3",
+		"description": "Набор запросов для теста Веб Калькулятора С Распределнными Вычислениями  \nИмеются переменные колекции:\n\nCALC_HOST - хост сервера например localhost\n\nCALC_PORT - порт сервера наприме 8080  \nадрес сервера получается = http://{{CALC_HOST}}:{{CALC_PORT}} -> http://localhost:8080",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40053615"
+	},
+	"item": [
+		{
+			"name": "Send expression",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"expression\": \"2*2+3*3\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{CALC_HOST}}:{{CALC_PORT}}/api/v1/calculate",
+					"protocol": "http",
+					"host": [
+						"{{CALC_HOST}}"
+					],
+					"port": "{{CALC_PORT}}",
+					"path": [
+						"api",
+						"v1",
+						"calculate"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Get all expressions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"expression\": \"1+1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{CALC_HOST}}:{{CALC_PORT}}/api/v1/expressions",
+					"protocol": "http",
+					"host": [
+						"{{CALC_HOST}}"
+					],
+					"port": "{{CALC_PORT}}",
+					"path": [
+						"api",
+						"v1",
+						"expressions"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Get expression",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{CALC_HOST}}:{{CALC_PORT}}/api/v1/expressions/fe49fa39-6901-4758-8638-dab3200b51b8",
+					"protocol": "http",
+					"host": [
+						"{{CALC_HOST}}"
+					],
+					"port": "{{CALC_PORT}}",
+					"path": [
+						"api",
+						"v1",
+						"expressions",
+						"fe49fa39-6901-4758-8638-dab3200b51b8"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"expression\": \"2+2*2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{CALC_HOST}}:{{CALC_PORT}}/internal/task",
+					"protocol": "http",
+					"host": [
+						"{{CALC_HOST}}"
+					],
+					"port": "{{CALC_PORT}}",
+					"path": [
+						"internal",
+						"task"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Send Task Result",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"403232fb-6224-407b-abac-1e5ad11ab9e6\",\r\n  \"result\": 4\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{CALC_HOST}}:{{CALC_PORT}}/internal/task",
+					"protocol": "http",
+					"host": [
+						"{{CALC_HOST}}"
+					],
+					"port": "{{CALC_PORT}}",
+					"path": [
+						"internal",
+						"task"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "CALC_HOST",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"key": "CALC_PORT",
+			"value": "8080",
+			"type": "string"
+		},
+		{
+			"key": "BASE_URL",
+			"value": "/api/v1/calculation",
+			"type": "string"
+		}
+	]
+}

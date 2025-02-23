@@ -1,0 +1,8 @@
+.git
+.vscode
+*.md
+vpn.db
+.gitignore
+corvin-vpn.service
+log.txt
+Makekefile
