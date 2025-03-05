@@ -65,6 +65,10 @@ func WrapperHandlerPostExpression(calc *calculator.Calculator) echo.HandlerFunc 
 		if err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
-		return c.JSON(http.StatusCreated, id)
+		var res struct {
+			Id string `json:"id"`
+		}
+		res.Id = id
+		return c.JSON(http.StatusCreated, res)
 	}
 }

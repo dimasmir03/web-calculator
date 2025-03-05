@@ -1,5 +1,3 @@
-### README для Агента
-
 # Web Calculator Agent
 
 ## Оглавление
@@ -24,63 +22,61 @@
 ## Запуск
 
 ### Требования
-- Go 1.20+
+- Go 1.24+
 - Доступ к оркестратору
+- Make
+- Docker
 
 ### Переменные окружения
+
 ```bash
 SERVER_URL=http://host.docker.internal:8080  # URL оркестратора
 COMPUTING_POWER=4                           # Количество горутин
 TIME_WAIT_MS=1000                           # Задержка при ошибках (мс)
-Сборка и запуск
-Через Makefile:
+```
 
-bash
-Copy
+# Сборка и запуск
+- Через Makefile:
+
+```bash
 make docker_build
 make docker_run
-Docker Compose:
+```
 
-yaml
-Copy
+- Docker Compose:
+
+```yaml
 agent:
   image: calc-agent
   environment:
     - SERVER_URL=http://orchestrator:8080
     - COMPUTING_POWER=4
+```
+
 Запуск нескольких агентов (Bash):
 
-bash
-Copy
+```bash
 for i in {1..3}; do
   docker run -d --name agent_$i calc-agent
 done
+```
+
 Масштабирование
 Увеличивайте COMPUTING_POWER или количество контейнеров:
 
-bash
-Copy
+```bash
 # Linux/Mac
 COMPUTING_POWER=8 ./agent
 
 # Windows
 $env:COMPUTING_POWER=8; .\agent.exe
-Технологии
-Go Routines
+```
 
-HTTP Client
-
-Docker
-
-Copy
-
-### Общие рекомендации
-
-1. **Postman коллекция**: Экспортируйте из Swagger и разместите в `docs/postman_collection.json`
-2. **Схема работы**: Добавьте изображение архитектуры в формате PNG/SVG
-3. **Тестирование**: Опишите команды для запуска тестов
-4. **Лицензия**: Добавьте LICENSE файл
-5. **Веб-интерфейс**: Если реализован, добавьте скриншоты
+# Технологии
+- Go Routines
+- HTTP Client
+- Docker
+- Worker Pool
 
 Пример команды для тестов:
 ## Тестирование
@@ -91,3 +87,4 @@ make test
 # Покрытие кода
 go test -coverprofile=coverage.out ./...
 go tool cover -html=coverage.out
+```
