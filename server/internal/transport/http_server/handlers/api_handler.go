@@ -20,7 +20,11 @@ import (
 func WrapperHandlerGetExpressions(calc *calculator.Calculator) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		exps := calc.GetExpressionsStatus()
-		return c.JSON(200, exps)
+		var res struct {
+			Expressions []calculator.Expr `json:"expressions"`
+		}
+		res.Expressions = exps
+		return c.JSON(200, res)
 	}
 }
 
