@@ -1,6 +1,6 @@
 BINARY_NAME = agent
 DOCKER_IMAGE = calc-agent
-SERVER_URL = http://calc-server:8080
+SERVER_URL = http://server:8080
 NETWORK = calc-net
 
 .PHONY: all run build test clean docker_build docker_run docker_clean help

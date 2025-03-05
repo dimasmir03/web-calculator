@@ -1,32 +1,37 @@
-version: '3.8'
+version: "3.8"
 
 services:
   server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
+    build: ./server
     ports:
       - "8080:8080"
-    networks:
-      - calc-net
     environment:
       - TIME_ADDITION_MS=200
       - TIME_SUBTRACTION_MS=200
       - TIME_MULTIPLICATION_MS=800
       - TIME_DIVISION_MS=800
-
-  agent:
-    build:
-      context: ./agent
-      dockerfile: Dockerfile
     networks:
       - calc-net
-    depends_on:
-      - server
+
+  agent:
+    build: ./agent
     environment:
       - SERVER_URL=http://server:8080
       - COMPUTING_POWER=5
       - TIME_WAIT_MS=1000
+    networks:
+      - calc-net
+    depends_on:
+      - server
+
+  web:
+    build: ./web
+    ports:
+      - "8081:80"
+    depends_on:
+      - server
+    networks:
+      - calc-net
 
 networks:
   calc-net:

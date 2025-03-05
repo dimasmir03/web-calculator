@@ -80,6 +80,7 @@ func (a *Application) Run() {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time_unix}, host=${host}, method=${method}, uri=${uri}, status=${status}, error=${error} user_agent=${user_agent} latency_human=${latency_human}\n",
 	}))
+	e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
 	e.Static("/docs", "docs")
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
