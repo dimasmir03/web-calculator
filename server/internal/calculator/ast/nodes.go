@@ -12,9 +12,12 @@ func ToTreeDrawer(rootNode Node) *tree.Tree {
 	return t
 }
 
+type UID string
+
 type Node interface {
 	toTreeDrawer(*tree.Tree)
 	GetToken() *lexer.Token
+	GetUUID() UID
 }
 
 var _ Node = &NumericNode{}
@@ -22,12 +25,14 @@ var _ Node = &UnaryNode{}
 var _ Node = &BinaryNode{}
 
 type NumericNode struct {
+	uuid  UID
 	val   float64
 	token *lexer.Token
 }
 
 func NewNumericNode(val float64, token *lexer.Token) *NumericNode {
 	return &NumericNode{
+		uuid:  UID(uuid.New().String()),
 		val:   val,
 		token: token,
 	}
@@ -42,8 +47,12 @@ func (n *NumericNode) GetToken() *lexer.Token {
 func (n *NumericNode) Value() float64 {
 	return n.val
 }
+func (n *NumericNode) GetUUID() UID {
+	return n.uuid
+}
 
 type UnaryNode struct {
+	uuid     UID
 	next     Node
 	operator Operation
 	token    *lexer.Token
@@ -51,6 +60,7 @@ type UnaryNode struct {
 
 func NewUnaryNode(operator Operation, next Node, token *lexer.Token) *UnaryNode {
 	return &UnaryNode{
+		uuid:     UID(uuid.New().String()),
 		operator: operator,
 		next:     next,
 		token:    token,
@@ -70,8 +80,9 @@ func (n *UnaryNode) toTreeDrawer(t *tree.Tree) {
 func (n *UnaryNode) GetToken() *lexer.Token {
 	return n.token
 }
-
-type UID string
+func (n *UnaryNode) GetUUID() UID {
+	return n.uuid
+}
 
 type BinaryNode struct {
 	uuid     UID

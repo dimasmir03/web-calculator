@@ -134,7 +134,7 @@ func (c *Expression) Eval() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	c.id = c.rootNode.(*ast.BinaryNode).GetUUID()
+	c.id = c.rootNode.GetUUID()
 	c.queueFromNode(c.rootNode)
 	// c.sortQueue()
 	// c.value, err = c.evaluator.Eval(c.rootNode)
