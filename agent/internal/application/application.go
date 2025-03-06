@@ -110,7 +110,7 @@ func (a *Application) taskProcessor(ctx context.Context) {
 }
 
 func (a *Application) processTask(ctx context.Context, task *Task) {
-	slog.Info("обработка таски", "id", task.Id)
+	slog.Info("обработка таски", "id", task.Id, slog.Any("task", task))
 
 	processTask := workerpool.TaskFunc(func(data interface{}) error {
 		t := data.(*Task)
@@ -126,18 +126,14 @@ func (a *Application) processTask(ctx context.Context, task *Task) {
 
 func (a *Application) calculate(task *Task) (*TaskResult, error) {
 	startTime := time.Now()
-	defer func() {
-		slog.Info("таска обработана",
-			"id", task.Id,
-			"time", time.Since(startTime),
-		)
-	}()
+	slog.Info("обработка началась", slog.Any("task", task))
+	res := new(TaskResult)
 
 	var result float64
 	switch task.Operation {
 	case "Addition":
 		result = task.Arg1 + task.Arg2
-	case "Subtraction":
+	case "Substraction":
 		result = task.Arg1 - task.Arg2
 	case "Multiplication":
 		result = task.Arg1 * task.Arg2
@@ -149,11 +145,15 @@ func (a *Application) calculate(task *Task) (*TaskResult, error) {
 	default:
 		return nil, fmt.Errorf("неизвестный операнд: %s", task.Operation)
 	}
+	res.Id = task.Id
+	res.Result = result
+	slog.Info("таска обработана",
+		"id", task.Id,
+		"time", time.Since(startTime),
+		slog.Any("task", task),
+	)
 
-	return &TaskResult{
-		Id:     task.Id,
-		Result: result,
-	}, nil
+	return res, nil
 }
 
 func (a *Application) handleTaskError(err error) {
