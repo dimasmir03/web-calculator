@@ -104,11 +104,11 @@ func (c *Calculator) AddExpr(expr string) (string, error) {
 	}
 	c.m.Lock()
 	defer c.m.Unlock()
-	c.expr = append(c.expr, exp)
 	id, err := exp.Eval()
 	if err != nil {
 		return "", err
 	}
+	c.expr = append(c.expr, exp)
 	// c.queue = append(c.queue, ...)
 	// fmt.Println("queue", c.queue)
 	return id, nil
