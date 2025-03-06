@@ -185,6 +185,9 @@ func (c *Calculator) ShowResults() {
 func (c *Calculator) GetSimpleExpr() SimpleExpression {
 	var res SimpleExpression
 	for i := range c.expr {
+		if strings.HasPrefix(c.expr[i].status, "error") {
+			continue
+		}
 		for uid, v := range c.expr[i].queue {
 			fmt.Println(v)
 			fmt.Println("and here", reflect.TypeOf(v.A), reflect.TypeOf(v.B), v.status == "open")
@@ -211,17 +214,25 @@ func (c *Calculator) GetSimpleExpr() SimpleExpression {
 	return SimpleExpression{}
 }
 
-func (c *Calculator) SetSimpleExprResult(nid string, result float64) error {
+func (c *Calculator) SetSimpleExprResult(nid string, result float64, error string) error {
 	c.m.Lock()
 	defer c.m.Unlock()
 	id := ast.UID(nid)
 	var flag bool
 	for i := range c.expr {
+		if strings.HasPrefix(c.expr[i].status, "error") {
+			continue
+		}
 		for j, v := range c.expr[i].queue {
 			if v.Id == id {
+				if error != "" {
+					c.expr[i].status = "error: " + error
+					return nil
+					// c.expr[i]
+				}
 				if len(c.expr[i].queue) == 1 {
-					c.expr[i].value = result
 					c.expr[i].status = "complete"
+					c.expr[i].value = result
 				}
 				delete(c.expr[i].queue, id)
 				flag = true

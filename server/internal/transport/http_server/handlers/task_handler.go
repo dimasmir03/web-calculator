@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -41,10 +42,12 @@ func WrapperHandlerPostTask(calc *calculator.Calculator) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var req models.TaskResultRequest
 		err := c.Bind(&req)
+		slog.Info("Результат: ", req)
+		slog.Debug("Результат: ", req)
 		if err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, "ошибка декода запроса")
 		}
-		if err := calc.SetSimpleExprResult(req.Id, req.Result); err != nil {
+		if err := calc.SetSimpleExprResult(req.Id, req.Result, req.Error); err != nil {
 			return c.JSON(http.StatusNotFound, err.Error())
 		}
 		return c.NoContent(http.StatusOK)

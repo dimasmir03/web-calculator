@@ -34,7 +34,8 @@ type Task struct {
 
 type TaskResult struct {
 	Id     string  `json:"id"`
-	Result float64 `json:"result"`
+	Result float64 `json:"result,omitempty"`
+	Error  string  `json:"error,omitempty"`
 }
 
 type ServerClient interface {
@@ -115,10 +116,10 @@ func (a *Application) processTask(ctx context.Context, task *Task) {
 	processTask := workerpool.TaskFunc(func(data interface{}) error {
 		t := data.(*Task)
 		result, err := a.calculate(t)
-		if err != nil {
-			return err
-		}
-		return a.client.SendResultWithRetry(ctx, result)
+		// if err != nil {
+		// 	return err
+		// }
+		return a.client.SendResultWithRetry(ctx, result, err)
 	})
 
 	a.pool.AddTask(processTask, task)
@@ -128,7 +129,7 @@ func (a *Application) calculate(task *Task) (*TaskResult, error) {
 	startTime := time.Now()
 	slog.Info("обработка началась", slog.Any("task", task))
 	res := new(TaskResult)
-
+	res.Id = task.Id
 	var result float64
 	switch task.Operation {
 	case "Addition":
@@ -139,13 +140,13 @@ func (a *Application) calculate(task *Task) (*TaskResult, error) {
 		result = task.Arg1 * task.Arg2
 	case "Division":
 		if task.Arg2 == 0 {
-			return nil, errors.New("деление на 0")
+			slog.Error("деление на 0: ", task)
+			return res, errors.New("деление на 0")
 		}
 		result = task.Arg1 / task.Arg2
 	default:
 		return nil, fmt.Errorf("неизвестный операнд: %s", task.Operation)
 	}
-	res.Id = task.Id
 	res.Result = result
 	slog.Info("таска обработана",
 		"id", task.Id,
@@ -212,7 +213,12 @@ func (s *HTTPServerClient) GetTask(ctx context.Context) (*Task, error) {
 	return &task, nil
 }
 
-func (s *HTTPServerClient) SendResult(ctx context.Context, result *TaskResult) error {
+func (s *HTTPServerClient) SendResult(ctx context.Context, result *TaskResult, errresult error) error {
+	slog.Info("res", result)
+	slog.Info("err", errresult)
+	if errresult != nil {
+		result.Error = errresult.Error()
+	}
 	jsondata, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("ошибка кодирования в json: %w", err)
@@ -242,8 +248,8 @@ func (s *HTTPServerClient) SendResult(ctx context.Context, result *TaskResult) e
 	return nil
 }
 
-func (s *HTTPServerClient) SendResultWithRetry(ctx context.Context, result *TaskResult) error {
-	err := s.SendResult(ctx, result)
+func (s *HTTPServerClient) SendResultWithRetry(ctx context.Context, result *TaskResult, errresult error) error {
+	err := s.SendResult(ctx, result, errresult)
 	if err == nil {
 		return nil
 	}

@@ -53,6 +53,7 @@ type (
 
 	TaskResultRequest struct {
 		Id     string  `json:"id"`
-		Result float64 `json:"result"`
+		Result float64 `json:"result,omitempty"`
+		Error  string  `json:"error,omitempty"`
 	}
 )
