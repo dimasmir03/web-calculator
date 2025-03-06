@@ -3,7 +3,7 @@ package storage
 import (
 	"sync"
 
-	"github.com/dimasmir03/web-calculator-server/pkg/calculator/cmd/calculator"
+	"github.com/dimasmir03/web-calculator-server/internal/calculator/cmd/calculator"
 )
 
 type Store struct {

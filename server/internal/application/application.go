@@ -9,11 +9,11 @@ import (
 	"syscall"
 
 	_ "github.com/dimasmir03/web-calculator-server/docs"
+	"github.com/dimasmir03/web-calculator-server/internal/calculator/cmd/calculator"
 
 	"github.com/dimasmir03/web-calculator-server/internal/logging"
 	"github.com/dimasmir03/web-calculator-server/internal/transport/http_server"
 	"github.com/dimasmir03/web-calculator-server/internal/transport/http_server/router"
-	"github.com/dimasmir03/web-calculator-server/pkg/calculator/cmd/calculator"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

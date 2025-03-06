@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/dimasmir03/web-calculator-server/internal/calculator/cmd/calculator"
 	"github.com/dimasmir03/web-calculator-server/internal/transport/http_server/models"
-	"github.com/dimasmir03/web-calculator-server/pkg/calculator/cmd/calculator"
 	"github.com/labstack/echo/v4"
 )
 
