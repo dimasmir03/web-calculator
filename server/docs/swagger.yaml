@@ -39,7 +39,7 @@ definitions:
           $ref: '#/definitions/models.Expression'
         type: array
     type: object
-host: localhost:8080
+host: "localhost:8080"
 info:
   contact:
     email: support@calculator.ru

@@ -195,7 +195,7 @@ func NewHTTPServerClient(baseURL string) *HTTPServerClient {
 
 func (s *HTTPServerClient) GetTask(ctx context.Context) (*Task, error) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL+"/internal/task", nil)
-	resp, err := s.client.Do((req))
+	resp, err := s.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (s *HTTPServerClient) GetTask(ctx context.Context) (*Task, error) {
 }
 
 func (s *HTTPServerClient) SendResult(ctx context.Context, result *TaskResult) error {
-	json, err := json.Marshal(result)
+	jsondata, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("ошибка кодирования в json: %w", err)
 	}
@@ -222,7 +222,7 @@ func (s *HTTPServerClient) SendResult(ctx context.Context, result *TaskResult) e
 		ctx,
 		http.MethodPost,
 		s.baseURL+"/internal/task",
-		bytes.NewBuffer(json),
+		bytes.NewBuffer(jsondata),
 	)
 	if err != nil {
 		return fmt.Errorf("ошибка создания запроса: %w", err)

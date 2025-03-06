@@ -8,7 +8,7 @@ import (
 // Pool воркера
 type Pool struct {
 	Workers  []*Worker
-	taskСhan chan *Task
+	taskChan chan *Task
 
 	concurrency int
 	ctx         context.Context
@@ -21,7 +21,7 @@ func NewPool(ctx context.Context, concurrency int) *Pool {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Pool{
 		concurrency: concurrency,
-		taskСhan:    make(chan *Task, 1000),
+		taskChan:    make(chan *Task, 1000),
 		ctx:         ctx,
 		cancel:      cancel,
 	}
@@ -29,7 +29,7 @@ func NewPool(ctx context.Context, concurrency int) *Pool {
 
 // AddTask добавляет таски в pool
 func (p *Pool) AddTask(fn TaskFunc, data interface{}) {
-	p.taskСhan <- &Task{
+	p.taskChan <- &Task{
 		fn:   fn,
 		Data: data,
 	}
@@ -39,7 +39,7 @@ func (p *Pool) AddTask(fn TaskFunc, data interface{}) {
 // пока она не будет закончена.
 func (p *Pool) Run() {
 	for i := 1; i <= p.concurrency; i++ {
-		worker := NewWorker(i, p.taskСhan)
+		worker := NewWorker(i, p.taskChan)
 		p.Workers = append(p.Workers, worker)
 		p.wg.Add(1)
 		go func(w *Worker) {
@@ -87,5 +87,5 @@ func (p *Pool) Run() {
 func (p *Pool) Stop() {
 	p.cancel()
 	p.wg.Wait()
-	close(p.taskСhan)
+	close(p.taskChan)
 }
