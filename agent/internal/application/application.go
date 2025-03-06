@@ -132,13 +132,13 @@ func (a *Application) calculate(task *Task) (*TaskResult, error) {
 	res.Id = task.Id
 	var result float64
 	switch task.Operation {
-	case "Addition":
+	case "+":
 		result = task.Arg1 + task.Arg2
-	case "Substraction":
+	case "-":
 		result = task.Arg1 - task.Arg2
-	case "Multiplication":
+	case "*":
 		result = task.Arg1 * task.Arg2
-	case "Division":
+	case "/":
 		if task.Arg2 == 0 {
 			slog.Error("деление на 0: ", task)
 			return res, errors.New("деление на 0")

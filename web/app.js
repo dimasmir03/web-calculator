@@ -52,7 +52,7 @@ $(document).ready(function () {
                   <small>ID: ${expr.id}</small>
               </div>
               <div class="status-${expr.status.toLowerCase()}">
-                  ${expr.status}${expr.result ? `: ${expr.result}` : ""}
+                  ${expr.status}${expr.result ? `: ${parseFloat(expr.result)}` : ""}
               </div>
           </div>
       `

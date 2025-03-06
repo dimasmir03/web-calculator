@@ -135,7 +135,14 @@ func (c *Expression) Eval() (string, error) {
 		return "", err
 	}
 	c.id = c.rootNode.GetUUID()
-	c.queueFromNode(c.rootNode)
+	if n, ok := c.rootNode.(*ast.UnaryNode); ok {
+		res, _ := c.evaluator.HandleUnary(n)
+		c.id = n.GetUUID()
+		c.value = res
+		c.status = "complete"
+	} else {
+		c.queueFromNode(c.rootNode)
+	}
 	// c.sortQueue()
 	// c.value, err = c.evaluator.Eval(c.rootNode)
 	// if err != nil {
@@ -150,7 +157,7 @@ func (c *Expression) queueFromNode(rootNode ast.Node) any {
 		c.queue[n.GetUUID()] =
 			&SimpleExpression{c.queueFromNode(n.Left()),
 				c.queueFromNode(n.Right()),
-				n.GetToken().Type().String(),
+				n.Operator().String(),
 				n.GetUUID(),
 				"open"}
 		// c.queue = append(c.queue,
@@ -160,6 +167,9 @@ func (c *Expression) queueFromNode(rootNode ast.Node) any {
 		// 		n.GetUUID(),
 		// 		"open"})
 		return n.GetUUID()
+	case *ast.UnaryNode:
+		res, _ := c.evaluator.HandleUnary(n)
+		return res
 	case *ast.NumericNode:
 		return n.Value()
 	}
@@ -184,6 +194,9 @@ func (c *Calculator) ShowResults() {
 
 func (c *Calculator) GetSimpleExpr() SimpleExpression {
 	var res SimpleExpression
+	for _, v := range c.expr {
+		fmt.Println(&v, v)
+	}
 	for i := range c.expr {
 		if strings.HasPrefix(c.expr[i].status, "error") {
 			continue

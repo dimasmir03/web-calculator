@@ -37,7 +37,7 @@ func (e *NumericEvaluator) Eval(rootNode ast2.Node) (float64, error) {
 	case *ast2.BinaryNode:
 		return e.handleBinary(n)
 	case *ast2.UnaryNode:
-		return e.handleUnary(n)
+		return e.HandleUnary(n)
 	case *ast2.NumericNode:
 		return n.Value(), nil
 	}
@@ -68,7 +68,7 @@ func (e *NumericEvaluator) handleBinary(n *ast2.BinaryNode) (float64, error) {
 	return 0, EvalError(n.GetToken(), fmt.Errorf("unimplemented operator %s", n.Operator()))
 }
 
-func (e *NumericEvaluator) handleUnary(n *ast2.UnaryNode) (float64, error) {
+func (e *NumericEvaluator) HandleUnary(n *ast2.UnaryNode) (float64, error) {
 	val, err := e.Eval(n.Next())
 	if err != nil {
 		return 0, err
