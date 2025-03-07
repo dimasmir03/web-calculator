@@ -1,36 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Web Calculator</title>
-		<link rel="stylesheet" href="style.css" />
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	</head>
-	<body>
-		<div class="container">
-			<h1>Web Calculator</h1>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Distributed Calculator</title>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+	<header class="header">
+		<h1><i class="fas fa-calculator"></i> Distributed Calculator</h1>
+		<p class="subtitle">Вычисление сложных выражений с параллельной обработкой</p>
+	</header>
 
-			<div class="input-section">
-				<label for="expressionInput">Математическое выражение</label><input
-					type="text"
-					id="expressionInput"
-					placeholder="Введите выражение (например, 2+2*2)"
-				/>
-				<button id="submitBtn">Отправить</button>
-			</div>
-
-			<div class="controls">
-				<button id="refreshBtn">Обновить список</button>
-				<label>
-					<input type="checkbox" id="autoRefresh" /> Автообновление (каждые 2
-					сек)
-				</label>
-			</div>
-
-			<div id="expressionsList" class="expressions-list"></div>
+	<div class="input-card">
+		<div class="input-group">
+			<input type="text" id="expressionInput"
+				   placeholder="Введите выражение (например: (2+3)*4/5)"
+				   class="input-field">
+			<button id="submitBtn" class="submit-btn">
+				<i class="fas fa-paper-plane"></i> Отправить
+			</button>
 		</div>
+	</div>
 
-		<script src="app.js"></script>
-	</body>
+	<div class="controls">
+		<button id="refreshBtn" class="refresh-btn">
+			<i class="fas fa-sync-alt"></i> Обновить список
+		</button>
+		<label class="switch">
+			<input type="checkbox" id="autoRefresh">
+			<span class="slider"></span>
+			<span class="switch-label">Автообновление</span>
+		</label>
+	</div>
+
+	<div class="expressions-card">
+		<h2><i class="fas fa-history"></i> История вычислений</h2>
+		<div id="expressionsList" class="expressions-list"></div>
+	</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="app.js"></script>
+</body>
 </html>
