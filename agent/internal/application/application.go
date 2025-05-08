@@ -14,14 +14,61 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/dimasmir03/web-calculator-agent/pkg/workerpool"
-	"github.com/joho/godotenv"
+	"github.com/dimasmir03/web-calculator-agent/pkg/api"
+	"github.com/dimasmir03/workerpool"
+	"github.com/ilyakaznacheev/cleanenv"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
+type Client interface {
+	GetTask() (*api.GetTaskResponse, error)
+	SubmitResult(task *TaskResult) (*api.SubmitResultResponse, error)
+}
+
+type GRPCClient struct {
+	conn   *grpc.ClientConn
+	client api.CalculatorClient
+	ctx    context.Context
+}
+
+func NewGRPCClient(ctx context.Context, address string) (*GRPCClient, error) {
+	conn, err := grpc.NewClient(
+		address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка соединения с %s: %w", address, err)
+	}
+	client := api.NewCalculatorClient(conn)
+	return &GRPCClient{conn: conn, client: client, ctx: ctx}, nil
+}
+
+func (c *GRPCClient) GetTask() (*api.GetTaskResponse, error) {
+	resp, err := c.client.GetTask(c.ctx, &api.GetTaskRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("ошибка получения таски: %w", err)
+	}
+	fmt.Println(resp)
+	return resp, nil
+}
+
+func (c *GRPCClient) SubmitResult(task *TaskResult) (*api.SubmitResultResponse, error) {
+	resp, err := c.client.SubmitResult(c.ctx, &api.SubmitResultRequest{
+		Id:     task.Id,
+		Result: task.Result,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("ошибка отправки результата: %w", err)
+	}
+	return resp, nil
+}
+
 type Config struct {
-	ServerURL      string
-	ComputingPower int
-	RetryDelay     time.Duration
+	ServerURL      string        `env:"SERVER_URL" env-default:"http://localhost:8080"`
+	ComputingPower int           `env:"COMPUTING_POWER" env-default:"4"`
+	RetryDelay     time.Duration `env:"TIME_WAIT_MS" env-default:"1000ms"`
+	ServerGRPC     string        `env:"SERVER_GRPC" env-default:"localhost:50051"`
 }
 
 type Task struct {
@@ -29,7 +76,7 @@ type Task struct {
 	Arg1          float64 `json:"arg1"`
 	Arg2          float64 `json:"arg2"`
 	Operation     string  `json:"operation"`
-	OperationTime int     `json:"operation_time"`
+	OperationTime int64   `json:"operation_time"`
 }
 
 type TaskResult struct {
@@ -45,28 +92,28 @@ type ServerClient interface {
 
 type Application struct {
 	config   *Config
-	client   *HTTPServerClient
+	client   Client
 	pool     *workerpool.Pool
 	stopChan chan os.Signal
 }
 
 func NewApplication() (*Application, error) {
-	if err := godotenv.Load(); err != nil {
-		slog.Warn("ошибка загрузки .env")
-	}
-
-	cfg, err := LoadConfig()
-	if err != nil {
+	var cfg Config
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		return nil, fmt.Errorf("ошибка загрузки конфига: %w", err)
 	}
 
-	client := NewHTTPServerClient(cfg.ServerURL)
+	// client := NewHTTPServerClient(cfg.ServerURL)
+	client, err := NewGRPCClient(context.Background(), cfg.ServerGRPC)
+	if err != nil {
+		return nil, err
+	}
 
 	ctx := context.Background()
 	pool := workerpool.NewPool(ctx, cfg.ComputingPower)
 
 	return &Application{
-		config:   cfg,
+		config:   &cfg,
 		client:   client,
 		pool:     pool,
 		stopChan: make(chan os.Signal, 1),
@@ -99,13 +146,19 @@ func (a *Application) taskProcessor(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			task, err := a.client.GetTask(ctx)
+			task, err := a.client.GetTask()
 			if err != nil {
 				a.handleTaskError(err)
 				continue
 			}
-
-			a.processTask(ctx, task)
+			fmt.Println("CHECK", task)
+			a.processTask(ctx, &Task{
+				Id:            task.Task.Id,
+				Arg1:          task.Task.Arg1,
+				Arg2:          task.Task.Arg2,
+				Operation:     task.Task.Operation,
+				OperationTime: task.Task.OperationTime,
+			})
 		}
 	}
 }
@@ -116,10 +169,11 @@ func (a *Application) processTask(ctx context.Context, task *Task) {
 	processTask := workerpool.TaskFunc(func(data interface{}) error {
 		t := data.(*Task)
 		result, err := a.calculate(t)
-		// if err != nil {
-		// 	return err
-		// }
-		return a.client.SendResultWithRetry(ctx, result, err)
+		if err != nil {
+			return err
+		}
+		_, err = a.client.SubmitResult(result)
+		return err // .SendResultWithRetry(ctx, result, err)
 	})
 
 	a.pool.AddTask(processTask, task)
@@ -159,7 +213,7 @@ func (a *Application) calculate(task *Task) (*TaskResult, error) {
 
 func (a *Application) handleTaskError(err error) {
 	slog.Error("ошибка получения таски", "error", err)
-	time.Sleep(a.config.RetryDelay)
+	time.Sleep(time.Duration(a.config.RetryDelay))
 }
 
 func LoadConfig() (*Config, error) {
@@ -198,17 +252,17 @@ func (s *HTTPServerClient) GetTask(ctx context.Context) (*Task, error) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL+"/internal/task", nil)
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ошибка запроса: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("что-то пошло не так: code=%d", resp.StatusCode)
+		return nil, fmt.Errorf("неожиданный статус код: %d", resp.StatusCode)
 	}
 
 	var task Task
 	if err := json.NewDecoder(resp.Body).Decode(&task); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ошибка декодирования json: %w", err)
 	}
 	return &task, nil
 }
@@ -221,7 +275,7 @@ func (s *HTTPServerClient) SendResult(ctx context.Context, result *TaskResult, e
 	}
 	jsondata, err := json.Marshal(result)
 	if err != nil {
-		return fmt.Errorf("ошибка кодирования в json: %w", err)
+		return fmt.Errorf("oшибка кодирования в json: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(

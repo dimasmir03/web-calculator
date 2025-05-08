@@ -5,8 +5,10 @@ import (
 	"net/http"
 
 	"github.com/dimasmir03/web-calculator-server/internal/calculator/cmd/calculator"
-	"github.com/dimasmir03/web-calculator-server/internal/transport/http_server/errors"
-	"github.com/dimasmir03/web-calculator-server/internal/transport/http_server/models"
+	"github.com/dimasmir03/web-calculator-server/internal/model"
+	"github.com/dimasmir03/web-calculator-server/internal/storage/sqlite"
+	"github.com/dimasmir03/web-calculator-server/internal/transport/http/errors"
+	"github.com/dimasmir03/web-calculator-server/internal/transport/http/models"
 	"github.com/labstack/echo/v4"
 )
 
@@ -60,15 +62,15 @@ func WrapperHandlerGetExpression(calc *calculator.Calculator) echo.HandlerFunc {
 // @Success 201 {object} models.CalculateResponse
 // @Failure 422 {object} models.ErrResponse
 // @Router /calculate [post]
-func WrapperHandlerPostExpression(calc *calculator.Calculator) echo.HandlerFunc {
+func WrapperHandlerPostExpression(db *sqlite.Storage, calc *calculator.Calculator) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var req models.CalculateRequest
 		c.Bind(&req)
-
 		id, err := calc.AddExpr(req.Expression)
 		if err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
+		db.CreateExpression(&model.Expression{ID: id, Expression: req.Expression})
 		var res struct {
 			Id string `json:"id"`
 		}

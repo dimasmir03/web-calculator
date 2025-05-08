@@ -1,11 +1,11 @@
-package http_server
+package http
 
 import (
 	"context"
 	"net/http"
 	"time"
 
-	"github.com/dimasmir03/web-calculator-server/internal/storage"
+	"github.com/dimasmir03/web-calculator-server/internal/storage/sqlite"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -15,11 +15,11 @@ type Server struct {
 	HttpServer *echo.Echo
 	Address    string
 	Logger     *logrus.Logger
-	Storage    *storage.Store
+	Storage    *sqlite.Storage
 }
 
 // NewServer create Server object
-func NewServer(address string, e *echo.Echo, storage *storage.Store, logger *logrus.Logger) *Server {
+func NewServer(address string, e *echo.Echo, storage *sqlite.Storage, logger *logrus.Logger) *Server {
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	return &Server{
 		Address:    address,
@@ -29,13 +29,13 @@ func NewServer(address string, e *echo.Echo, storage *storage.Store, logger *log
 	}
 }
 
-// Run http_server server
+// Run http server
 func (s *Server) Run() {
 	s.Logger.Infof("Server starting at %s", s.Address)
 	s.HttpServer.Start(s.Address)
 }
 
-// Stop http_server server
+// Stop http server
 func (s *Server) Stop(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	if err := s.HttpServer.Shutdown(ctx); err != nil {

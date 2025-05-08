@@ -4,16 +4,23 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
+	"github.com/dimasmir03/web-calculator-server/internal/transport/grpc/api"
+	"google.golang.org/grpc"
+
 	_ "github.com/dimasmir03/web-calculator-server/docs"
+	"github.com/dimasmir03/web-calculator-server/internal/auth"
 	"github.com/dimasmir03/web-calculator-server/internal/calculator/cmd/calculator"
-	"github.com/dimasmir03/web-calculator-server/internal/logging"
-	"github.com/dimasmir03/web-calculator-server/internal/transport/http_server"
-	"github.com/dimasmir03/web-calculator-server/internal/transport/http_server/router"
-	"github.com/joho/godotenv"
+	"github.com/dimasmir03/web-calculator-server/internal/storage/sqlite"
+	mygrpc "github.com/dimasmir03/web-calculator-server/internal/transport/grpc"
+	"github.com/dimasmir03/web-calculator-server/internal/transport/http"
+	"github.com/dimasmir03/web-calculator-server/internal/transport/http/router"
+	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
@@ -21,21 +28,18 @@ import (
 )
 
 type Config struct {
-	Addr string
+	Addr      string
+	DB_URL    string `env:"DB_URL" env-default:"sqlite.db"`
+	JWTSecret string `env:"JWT_SECRET" env-default:"secret"`
 }
 
 func ConfigFromEnv() (*Config, error) {
-	err := godotenv.Load()
-	if err != nil {
+	var cfg Config
+	if err := cleanenv.ReadConfig(".env", &cfg); err != nil {
 		return nil, fmt.Errorf("ошибка загрузки файла .env: %v", err)
 	}
 
-	// config := new(Config)
-	// config.Addr = os.Getenv("PORT")
-	// if config.Addr == "" {
-	// 	config.Addr = "5353"
-	// }
-	return nil, nil
+	return &cfg, nil
 }
 
 type Application struct {
@@ -49,21 +53,23 @@ func New() *Application {
 	if err != nil {
 		log.Printf("Err New App: %v", err)
 	}
+
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+	logger.Formatter = &logrus.JSONFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+	}
+	logger.Debug("Config: ", cfg)
+	logger.Debug(strconv.Atoi(os.Getenv("TIME_MULTIPLICATION_MS")))
+
 	return &Application{
 		config: cfg,
-		log:    logrus.New(),
+		log:    logger,
 		r:      echo.New(),
 	}
 }
 
 func (a *Application) Run() {
-	// a.r.Use(Logging)
-	// a.r.HandleFunc("/api/v1/calculate", CalculationHandler)
-	// a.log.Infof("Starting server on :%s", a.config.Addr)
-	// if err := http.ListenAndServe(":"+a.config.Addr, a.r); err != nil {
-	// 	a.log.Errorf("Failed start server: %s", err.Error())
-	// }
-
 	// Create context
 	ctx := context.Background()
 
@@ -71,10 +77,20 @@ func (a *Application) Run() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 
-	calc := calculator.NewCalculator()
+	db, err := sqlite.New(a.config.DB_URL)
+	if err != nil {
+		a.log.Fatal(err)
+	}
+	if err := db.Migrate(); err != nil {
+		a.log.Fatal(err)
+	}
+	authService := auth.NewService(db, a.config.JWTSecret)
+	authHandler := auth.Handler{Service: authService}
+	fmt.Println(authService)
+
+	calc := calculator.NewCalculator(db)
 
 	// Create router
-	// router := echo.NewRouter()
 	e := echo.New()
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time_unix}, host=${host}, method=${method}, uri=${uri}, status=${status}, error=${error} user_agent=${user_agent} latency_human=${latency_human}\n",
@@ -83,16 +99,38 @@ func (a *Application) Run() {
 	e.Use(middleware.Recover())
 	e.Static("/docs", "docs")
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.POST("/api/v1/register", authHandler.Register)
+	e.POST("/api/v1/login", authHandler.Login)
+
+	authorized := e.Group("")
+	authorized.Use(authService.JWTMiddleware())
+
 	router.InternalRouter(e, calc)
-	router.ApiRouter(e, calc)
+	router.ApiRouter(authorized, db, calc)
 	router.SwaggerRouter(e)
-	fmt.Println(e.Routers())
+	a.log.Infof("API routes: %v", e.Routers())
+
+	grpcServer := grpc.NewServer()
+	api.RegisterCalculatorServer(grpcServer, &mygrpc.Server{Calc: calc})
+
+	go func() {
+		// Запуск gRPC
+		lis, err := net.Listen("tcp", ":50051")
+		if err != nil {
+			a.log.Fatalf("failed to serve: %v", err)
+		}
+		a.log.Infof("Starting gRPC server on %s", lis.Addr())
+		if err := grpcServer.Serve(lis); err != nil {
+			a.log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
 	// API subroute
 	// apiRouter := router.PathPrefix("/api").Subrouter()
 	// apiRouter.Use(logging.LoggingMiddleware)
 
 	// Create new server and start
-	apiServer := http_server.NewServer(fmt.Sprintf("%s:%s", "0.0.0.0", "8080"), e, nil, logging.Logger)
+	apiServer := http.NewServer(fmt.Sprintf("%s:%s", "0.0.0.0", "8080"), e, nil, a.log)
 	go apiServer.Run()
 
 	// gracefully shutdown
@@ -100,4 +138,5 @@ func (a *Application) Run() {
 	<-stop
 	// Stop server with timeout
 	apiServer.Stop(ctx)
+	grpcServer.Stop()
 }

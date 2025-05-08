@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option go_package = "pkg/api/api";
+
+package api;
+
+service Calculator {
+  rpc GetTask (GetTaskRequest) returns (GetTaskResponse);
+  rpc SubmitResult (SubmitResultRequest) returns (SubmitResultResponse);
+}
+
+message GetTaskRequest {
+  string agent_id = 1;
+}
+
+message GetTaskResponse {
+  Task task = 1;
+}
+
+message SubmitResultRequest {
+  string id = 1;
+  double result = 2;
+}
+
+message SubmitResultResponse {
+  bool Success = 1;
+}
+
+message Task {
+  string id = 1;
+  double arg1 = 2;
+  double arg2 = 3;
+  string operation = 4;
+  int64 operationTime = 5;
+}

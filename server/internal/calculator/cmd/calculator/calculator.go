@@ -13,6 +13,8 @@ import (
 	lexer3 "github.com/dimasmir03/web-calculator-server/internal/calculator/lexer"
 	parser3 "github.com/dimasmir03/web-calculator-server/internal/calculator/parser"
 	"github.com/dimasmir03/web-calculator-server/internal/calculator/parser/recursivedescent"
+	"github.com/dimasmir03/web-calculator-server/internal/model"
+	"github.com/dimasmir03/web-calculator-server/internal/storage/sqlite"
 )
 
 // func main() {
@@ -28,9 +30,10 @@ import (
 // 	// fmt.Println(calc.queue)
 // }
 
-func NewCalculator() *Calculator {
+func NewCalculator(db *sqlite.Storage) *Calculator {
 	return &Calculator{
 		expr: make([]*Expression, 0),
+		db:   db,
 	}
 }
 
@@ -57,6 +60,7 @@ type Expression struct {
 
 type Calculator struct {
 	expr []*Expression
+	db   *sqlite.Storage
 	// queue []*SimpleExpression
 	m sync.Mutex
 }
@@ -245,6 +249,7 @@ func (c *Calculator) SetSimpleExprResult(nid string, result float64, error strin
 				}
 				if len(c.expr[i].queue) == 1 {
 					c.expr[i].status = "complete"
+					c.db.UpdateExpression(&model.Expression{ID: string(c.expr[i].id), Result: result, Status: "complete"})
 					c.expr[i].value = result
 				}
 				delete(c.expr[i].queue, id)
