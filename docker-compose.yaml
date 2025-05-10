@@ -1,31 +1,22 @@
 version: "3.8"
 
 services:
-  sqlite:
-    image: hibitdev/sqlite:latest
-    container_name: sqlite
-    hostname: sqlite.hibit
-    ports:
-      - "8191:8191"
-    volumes:
-      - ./sqlite:/db
-    command: [ "tail", "-f", "/dev/null" ]
+
 
   server:
     container_name: server
     build: ./server
     ports:
       - "8080:8080"
+      - "50051:50051"
     volumes:
-      - ./data:/data
+      - data:/data
     environment:
       - DB_URL=/data/sqlite.db
       - TIME_ADDITION_MS=200
       - TIME_SUBTRACTION_MS=200
       - TIME_MULTIPLICATION_MS=800
       - TIME_DIVISION_MS=800
-    depends_on:
-      - sqlite
     networks:
       - calc-net
 
@@ -52,7 +43,8 @@ services:
     networks:
       - calc-net
 
-
+volumes:
+  data:
 
 networks:
   calc-net:

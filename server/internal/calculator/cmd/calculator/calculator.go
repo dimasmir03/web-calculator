@@ -300,3 +300,17 @@ func isNumber(x interface{}) bool {
 	_, ok := x.(float64)
 	return ok
 }
+
+func (c *Calculator) RestoreExpressions() error {
+	exprs, err := c.db.RestoreExpressions()
+	if err != nil {
+		return err
+	}
+	for _, expr := range exprs {
+		_, err := c.AddExpr(expr.Expression)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

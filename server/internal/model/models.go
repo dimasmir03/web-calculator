@@ -3,7 +3,7 @@ package model
 import "time"
 
 type User struct {
-	ID           string `gorm:"primaryKey;autoIncrement;not null"`
+	ID           string `gorm:"primaryKey;autoIncrement"`
 	Login        string `gorm:"unique;not null"`
 	PasswordHash string `gorm:"not null"`
 	CreatedAt    time.Time
@@ -21,7 +21,7 @@ type Expression struct {
 }
 
 type Operation struct {
-	ID        string `gorm:"primaryKey;autoIncrement;not null"`
+	ID        string `gorm:"primaryKey;autoIncrement"`
 	Type      string `gorm:"not null"`
 	Duration  int64  `gorm:"not null"` // в миллисекундах
 	CreatedAt time.Time

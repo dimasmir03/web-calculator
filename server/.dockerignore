@@ -1,8 +1,7 @@
 .git
 .vscode
 *.md
-vpn.db
+*.db
 .gitignore
-corvin-vpn.service
 log.txt
 Makekefile

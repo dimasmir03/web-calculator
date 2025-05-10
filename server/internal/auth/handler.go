@@ -30,6 +30,9 @@ func (h *Handler) Login(c echo.Context) error {
 	}
 	token, err := h.Service.Login(req.Login, req.Password)
 	if err != nil {
+		if err == echo.ErrUnauthorized {
+			return c.JSON(http.StatusUnauthorized, "invalid login or password: "+err.Error())
+		}
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 	c.Response().Header().Set("Authorization", token)

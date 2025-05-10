@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/dimasmir03/web-calculator-server/internal/model"
 	"gorm.io/driver/sqlite"
@@ -12,11 +13,19 @@ type Storage struct {
 	db *gorm.DB
 }
 
-func New(url string) (*Storage, error) {
-	db, err := gorm.Open(sqlite.Open(url))
+func NewStorage(url string) (*Storage, error) {
+	db, err := gorm.Open(sqlite.Open(url), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
+	storage, err := NewStorageFromDB(db)
+	if err != nil {
+		return nil, err
+	}
+	return storage, nil
+}
+
+func NewStorageFromDB(db *gorm.DB) (*Storage, error) {
 	return &Storage{db}, nil
 }
 
@@ -63,4 +72,13 @@ func (s *Storage) GetUserByLogin(login string) (*model.User, error) {
 		return nil, nil
 	}
 	return &user, err
+}
+
+func (s *Storage) RestoreExpressions() ([]*model.Expression, error) {
+	var exprs []*model.Expression
+	err := s.db.Find(&exprs).Error
+	if err == nil {
+		fmt.Errorf("ошибка восстановления выражений: %w", err)
+	}
+	return exprs, err
 }

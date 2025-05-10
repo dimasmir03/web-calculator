@@ -32,5 +32,8 @@ COPY --from=builder /app/.env ./.env
 # Порт для API оркестратора
 EXPOSE 8080
 
+# Порт для gRPC оркестратора
+EXPOSE 50051
+
 # Запуск оркестратора
 CMD ["./server"]

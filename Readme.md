@@ -1,128 +1,204 @@
-# Распределенный вычислитель арифметических выражений
+# 🧮 Распределённый вычислитель арифметических выражений
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/dimasmir03/web-calculator)](https://goreportcard.com/report/github.com/diamsmir03/web-calculator)
 [![Docker Pulls](https://img.shields.io/docker/pulls/dimasmir/calc-server)](https://hub.docker.com/r/dimasmir/calc-server)
-[![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
-[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](http://localhost:8080/swagger)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/dimasmir03/web-calculator/ci.yml)](https://github.com/dimasmir03/web-calculator/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/dimasmir03/web-calculator)](https://codecov.io/gh/dimasmir03/web-calculator)
 
-## Архитектура
+## 🚀 Возможности
+- 🔢 Вычисление сложных арифметических выражений
+- 🔐 Многопользовательский режим с JWT-аутентификацией
+- ⚡ Параллельные вычисления с помощью агентов
+- 💾 Сохранение состояния в SQLite
+- 🔄 Автоматическое восстановление после перезапуска
 
-### Компоненты
+## 🏗️ Архитектура
+```mermaid
+graph TD
+    A[Веб-интерфейс] -->|HTTP| B[Оркестратор]
+    B -->|gRPC| C[Агенты]
+    B --> D[(SQLite)]
+    C --> B
+```
 
-- Оркестратор (API, аутентификация, хранение данных)
-- Агент (вычислитель выражений)
-- Веб-интерфейс (пользовательский интерфейс)
-- SQLite (хранение данных)
-
-### Как работает
-
-1. Оркестратор получает запросы от Веб-интерфейса
-2. Оркестратор отправляет задачу Агенту
-3. Агент вычисляет выражение и отправляет результат Оркестратору
-4. Оркестратор сохраняет результат в SQLite
-5. Оркестратор отправляет результат Веб-интерфейсу
-
-## Запуск
+## 🛠️ Установка и запуск
 
 ### Требования
 
-- Docker и Docker Compose
-- Go 1.20+
-- Make
+- Docker 20.10+ или
+- Go 1.20+ (для запуска без Docker)
+- SQLite3 (для запуска без Docker)
 
-### Запуск
+### 1. Запуск с Docker (все ОС)
 
-1. Клонировать репозиторий
-2. Перейти в папку `web-calculator`
-3. Запустить `docker-compose up --build`
+```bash
+# Linux/macOS (bash)
+git clone https://github.com/dimasmir03/web-calculator.git
+cd web-calculator
+docker-compose up --build
+```
 
-### Доступные endpoints
+```powershell
+# Windows (PowerShell)
+git clone https://github.com/dimasmir03/web-calculator.git
+cd web-calculator
+docker-compose up --build
+```
 
-- Веб-интерфейс: http://localhost:8081
-- Swagger UI: http://localhost:8080/swagger
-- gRPC сервер: localhost:50051
+```cmd
+:: Windows (CMD)
+git clone https://github.com/dimasmir03/web-calculator.git
+cd web-calculator
+docker-compose up --build
+```
 
-## Аутентификация
+После запуска откройте:
+
+- Веб-интерфейс: [http://localhost:8081](http://localhost:8081)
+- Документация API: [http://localhost:8080/swagger](http://localhost:8080/swagger)
+
+### 2. Запуск без Docker
+
+#### Linux/macOS (bash)
+
+```bash
+# Сервер (оркестратор)
+git clone https://github.com/dimasmir03/web-calculator.git
+cd web-calculator/server
+go run cmd/server/main.go
+```
+
+```bash
+# Агент (в новом терминале)
+cd ../agent
+go run cmd/agent/main.go
+```
+
+```bash
+# Фронтенд (в новом терминале)
+cd web
+# Откройте в браузере файл index.html
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Сервер
+git clone https://github.com/dimasmir03/web-calculator.git
+cd web-calculator\server
+go run .\cmd\server\main.go
+```
+
+```powershell
+# Агент (в новом окне)
+cd web-calculator\agent
+go run .\cmd\agent\main.go
+```
+
+```powershell
+# Фронтенд (в новом окне)
+cd web-calculatorъ\web
+# Откройте в браузере файл index.html
+```
+
+#### Windows (CMD)
+
+```cmd
+:: Сервер
+git clone https://github.com/dimasmir03/web-calculator.git
+cd web-calculator\server
+go run .\cmd\server\main.go
+```
+
+```cmd
+:: Агент (в новом окне)
+cd web-calculator\agent
+go run .\cmd\agent\main.go
+```
+
+```cmd
+:: Фронтенд (в новом окне)
+cd web-calculator\web
+:: Откройте в браузере файл index.html
+```
+
+## 🔒 Аутентификация
 
 ### Регистрация
 
-bash
+```bash
+# Linux/macOS/Windows (PowerShell)
 curl -X POST http://localhost:8080/api/v1/register \
   -H "Content-Type: application/json" \
   -d '{"login":"user1", "password":"secret"}'
+```
 
-### Логин
+### Получение токена
 
-bash
+```bash
 curl -X POST http://localhost:8080/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"login":"user1", "password":"secret"}'
+```
 
-### Использование токена
+## 📚 API Документация
 
-bash
-curl -X POST http://localhost:8080/api/v1/calculate \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{"expression": "2+2*2"}'
-
-## API Документация
-
-Полная документация доступна через Swagger UI:
-http://localhost:8080/swagger
+Доступна через Swagger UI: [http://localhost:8080/swagger](http://localhost:8080/swagger)
 
 Основные endpoints:
 
-POST /register - регистрация
+- POST /register - регистрация
+- POST /login - аутентификация
+- POST /calculate - добавление выражения
+- GET /expressions - список выражений
 
-POST /login - получение токена
-
-POST /calculate - добавление выражения
-
-GET /expressions - список выражений
-
-## Переменные окружения
+## ⚙️ Конфигурация
 
 ### Оркестратор
 
-ini
-DB_DSN=/data/calculator.db  # Путь к SQLite
-JWT_SECRET=your-secret-key  # Ключ подписи JWT
-GRPC_PORT=50051             # Порт gRPC сервера
+```.env
+TIME_ADDITION_MS=1000       # Время сложения (мс)
+TIME_SUBTRACTION_MS=1000    # Время вычитания (мс)
+TIME_MULTIPLICATION_MS=1000 # Время умножения (мс)
+TIME_DIVISION_MS=1000       # Время деления (мс)
+DB_DSN=calculator.db    # Путь к SQLite
+JWT_SECRET=your-secret  # Секрет для JWT
+GRPC_PORT=50051         # Порт gRPC
+```
 
 ### Агент
 
-ini
-SERVER_GRPC=orchestrator:50051  # gRPC адрес оркестратора
-COMPUTING_POWER=4               # Количество горутин
+```.env
+SERVER_GRPC=localhost:50051  # Адрес оркестратора
+COMPUTING_POWER=4            # Количество ядер
+```
 
-## Технологии
+## 🧪 Тестирование
 
-### Сервер
+### Модульные тесты
 
-- Go
-- Echo Framework
-- SQLite (GORM)
-- JWT аутентификация
-- gRPC для агентов
+```bash
+# Linux/macOS
+cd server && go test -v ./...
+```
 
-### Агент
+```bash
+# Windows
+cd server && go test -v ./...
+```
 
-- Go
-- gRPC клиент
-- Пул горутин
+### Интеграционные тесты
 
-### Фронтенд
+```bash
+# Требуется Docker
+docker-compose -f docker-compose.test.yml up --build
+```
 
-- jQuery
-- HTML5
-- CSS3
-- JWT авторизация
+## 🛡️ Особенности работы
 
-### Инфраструктура
+- Восстановление состояния: Все выражения сохраняются в БД
+- Масштабирование: Запуск нескольких агентов:
 
-- Docker
-- Docker Compose
-- Автоматические миграции
-
-## Спасибо за внимание!
+```bash
+docker-compose up --scale agent=3
+```

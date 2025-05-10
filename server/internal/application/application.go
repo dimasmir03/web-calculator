@@ -36,7 +36,10 @@ type Config struct {
 func ConfigFromEnv() (*Config, error) {
 	var cfg Config
 	if err := cleanenv.ReadConfig(".env", &cfg); err != nil {
-		return nil, fmt.Errorf("ошибка загрузки файла .env: %v", err)
+		return nil, fmt.Errorf("ошибка загрузки переменных из файла .env: %v", err)
+	}
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
+		return nil, fmt.Errorf("ошибка загрузки переменных из окружения: %v", err)
 	}
 
 	return &cfg, nil
@@ -77,7 +80,7 @@ func (a *Application) Run() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 
-	db, err := sqlite.New(a.config.DB_URL)
+	db, err := sqlite.NewStorage(a.config.DB_URL)
 	if err != nil {
 		a.log.Fatal(err)
 	}
@@ -89,6 +92,9 @@ func (a *Application) Run() {
 	fmt.Println(authService)
 
 	calc := calculator.NewCalculator(db)
+	if err = calc.RestoreExpressions(); err != nil {
+		a.log.Fatal("ошибка восстановления выражений: ", err)
+	}
 
 	// Create router
 	e := echo.New()
@@ -98,11 +104,11 @@ func (a *Application) Run() {
 	e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
 	e.Static("/docs", "docs")
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/swagger", echoSwagger.WrapHandler)
 	e.POST("/api/v1/register", authHandler.Register)
 	e.POST("/api/v1/login", authHandler.Login)
 
-	authorized := e.Group("")
+	authorized := e.Group("/api/v1/")
 	authorized.Use(authService.JWTMiddleware())
 
 	router.InternalRouter(e, calc)
