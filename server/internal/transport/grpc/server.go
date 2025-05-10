@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -30,8 +29,9 @@ func (s *Server) GetTask(
 	error,
 ) {
 	expr := s.Calc.GetSimpleExpr()
-	fmt.Println(expr)
+	slog.Debug("Received expression: ", expr)
 	if string(expr.Id) == "" {
+		slog.Debug("No tasks available")
 		return nil, status.Error(codes.NotFound, "нету задач")
 	}
 	var tt int
@@ -52,7 +52,7 @@ func (s *Server) GetTask(
 		Operation:     expr.Op,
 		OperationTime: int64(tt),
 	}
-	fmt.Println("CHECK", task)
+	slog.Debug("Sending task: ", task)
 	return &api.GetTaskResponse{Task: task}, nil
 }
 
@@ -63,9 +63,11 @@ func (s *Server) SubmitResult(
 	*api.SubmitResultResponse,
 	error,
 ) {
-	slog.Debug("Результат: ", req)
+	slog.Debug("Received result: ", req)
 	if err := s.Calc.SetSimpleExprResult(req.Id, req.Result, ""); err != nil {
+		slog.Debug("Error setting result: ", err)
 		return &api.SubmitResultResponse{Success: false}, status.Error(codes.NotFound, err.Error())
 	}
+	slog.Debug("Result successfully set")
 	return &api.SubmitResultResponse{Success: true}, nil
 }

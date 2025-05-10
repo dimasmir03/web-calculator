@@ -166,4 +166,5 @@ func (a *Application) Run() {
 	// Stop server with timeout
 	apiServer.Stop(ctx)
 	grpcServer.Stop()
+	a.log.Infof("Stopping API server")
 }

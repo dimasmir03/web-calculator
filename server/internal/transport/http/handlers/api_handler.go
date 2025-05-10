@@ -32,8 +32,9 @@ func WrapperHandlerGetExpressions(calc *calculator.Calculator) echo.HandlerFunc 
 	}
 }
 
-Summary		Get expressio
+// Summary		Get expressio
 // GetExpression godoc
+//
 //	@Summary		Get expression by ID
 //	@Description	Get expression details by ID
 //	@Tags			expressions
@@ -55,9 +56,12 @@ func WrapperHandlerGetExpression(calc *calculator.Calculator) echo.HandlerFunc {
 	}
 }
 
- expression
+// expression
+//
 //	@Descrip
+//
 // PostExpression godoc
+//
 //	@Summary		Create new expression
 //	@Description	Add new arithmetic expression for calculation
 //	@Tags			expressions

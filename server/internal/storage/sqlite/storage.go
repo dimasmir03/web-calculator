@@ -16,11 +16,11 @@ type Storage struct {
 func NewStorage(url string) (*Storage, error) {
 	db, err := gorm.Open(sqlite.Open(url), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error opening gorm db connection: %w", err)
 	}
 	storage, err := NewStorageFromDB(db)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating storage from db: %w", err)
 	}
 	return storage, nil
 }
@@ -35,11 +35,19 @@ func (s *Storage) Migrate() error {
 		&model.User{},
 		&model.Operation{},
 	}
-	return s.db.AutoMigrate(arr...)
+	err := s.db.AutoMigrate(arr...)
+	if err != nil {
+		return fmt.Errorf("error migrating db: %w", err)
+	}
+	return nil
 }
 
 func (s *Storage) CreateExpression(expression *model.Expression) error {
-	return s.db.Create(expression).Error
+	err := s.db.Create(expression).Error
+	if err != nil {
+		return fmt.Errorf("error creating expression: %w", err)
+	}
+	return nil
 }
 
 func (s *Storage) GetExpressionByID(id string) (*model.Expression, error) {
@@ -48,21 +56,32 @@ func (s *Storage) GetExpressionByID(id string) (*model.Expression, error) {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
-	return &expr, err
+	if err != nil {
+		return nil, fmt.Errorf("error getting expression by id: %w", err)
+	}
+	return &expr, nil
 }
 
 func (s *Storage) UpdateExpression(expr *model.Expression) error {
 	expr1, err := s.GetExpressionByID(expr.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting expression by id: %w", err)
 	}
 	expr1.Result = expr.Result
 	expr1.Status = expr.Status
-	return s.db.Save(expr1).Error
+	err = s.db.Save(expr1).Error
+	if err != nil {
+		return fmt.Errorf("error updating expression: %w", err)
+	}
+	return nil
 }
 
 func (s *Storage) CreateUser(user *model.User) error {
-	return s.db.Create(user).Error
+	err := s.db.Create(user).Error
+	if err != nil {
+		return fmt.Errorf("error creating user: %w", err)
+	}
+	return nil
 }
 
 func (s *Storage) GetUserByLogin(login string) (*model.User, error) {

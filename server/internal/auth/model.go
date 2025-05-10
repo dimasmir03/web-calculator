@@ -1,7 +1,11 @@
 package auth
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/dimasmir03/web-calculator-server/internal/calculator/ast"
+	"github.com/labstack/echo/v4"
 )
 
 type Expr struct {
@@ -19,4 +23,15 @@ type RegisterRequest struct {
 type LoginRequest struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
+}
+
+func (h *Handler) bind(c echo.Context, i interface{}) error {
+	if err := c.Bind(i); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid json: %v", err))
+	}
+	if err := c.Validate(i); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid fields: %v", err))
+	}
+
+	return nil
 }
