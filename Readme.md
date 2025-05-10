@@ -54,13 +54,13 @@ docker-compose up --build
 
 После запуска откройте:
 
-- Веб-интерфейс: [http://localhost:8081](http://localhost:8081)
-- Документация API: [http://localhost:8080/swagger](http://localhost:8080/swagger)
+- Веб-интерфейс: [http://localhost:8081/](http://localhost:8081/)
+- Документация API: [http://localhost:8080/swagger/](http://localhost:8080/swagger/)
 
 ### 2. Запуск без Docker
 
 #### Linux/macOS (bash)
-
+z
 ```bash
 # Сервер (оркестратор)
 git clone https://github.com/dimasmir03/web-calculator.git
@@ -143,7 +143,7 @@ curl -X POST http://localhost:8080/api/v1/login \
 
 ## 📚 API Документация
 
-Доступна через Swagger UI: [http://localhost:8080/swagger](http://localhost:8080/swagger)
+Доступна через Swagger UI: [http://localhost:8080/swagger/](http://localhost:8080/swagger/)
 
 Основные endpoints:
 

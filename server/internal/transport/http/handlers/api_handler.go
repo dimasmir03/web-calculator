@@ -13,12 +13,14 @@ import (
 )
 
 // GetExpressions godoc
-// @Summary Get all expressions
-// @Description Get list of all expressions with their statuses
-// @Tags expressions
-// @Produce json
-// @Success 200 {object} models.ExpressionsResponse
-// @Router /expressions [get]
+//
+//	@Summary		Get all expressi
+//	@Summary		Get all expressions
+//	@Description	Get list of all expressions with their statuses
+//	@Tags			expressions
+//	@Produce		json
+//	@Success		200	{object}	models.ExpressionsResponse
+//	@Router			/expressions [get]
 func WrapperHandlerGetExpressions(calc *calculator.Calculator) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		exps := calc.GetExpressionsStatus()
@@ -30,15 +32,16 @@ func WrapperHandlerGetExpressions(calc *calculator.Calculator) echo.HandlerFunc 
 	}
 }
 
+Summary		Get expressio
 // GetExpression godoc
-// @Summary Get expression by ID
-// @Description Get expression details by ID
-// @Tags expressions
-// @Produce json
-// @Param id path string true "Expression ID"
-// @Success 200 {object} models.Expression
-// @Failure 404 {object} models.ErrResponse
-// @Router /expressions/{id} [get]
+//	@Summary		Get expression by ID
+//	@Description	Get expression details by ID
+//	@Tags			expressions
+//	@Produce		json
+//	@Param			id	path		string	true	"Expression ID"
+//	@Success		200	{object}	models.Expression
+//	@Failure		404	{object}	models.ErrResponse
+//	@Router			/expressions/{id} [get]
 func WrapperHandlerGetExpression(calc *calculator.Calculator) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id := c.Param("id")
@@ -52,16 +55,18 @@ func WrapperHandlerGetExpression(calc *calculator.Calculator) echo.HandlerFunc {
 	}
 }
 
+ expression
+//	@Descrip
 // PostExpression godoc
-// @Summary Create new expression
-// @Description Add new arithmetic expression for calculation
-// @Tags expressions
-// @Accept json
-// @Produce json
-// @Param input body models.CalculateRequest true "Expression data"
-// @Success 201 {object} models.CalculateResponse
-// @Failure 422 {object} models.ErrResponse
-// @Router /calculate [post]
+//	@Summary		Create new expression
+//	@Description	Add new arithmetic expression for calculation
+//	@Tags			expressions
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		models.CalculateRequest	true	"Expression data"
+//	@Success		201		{object}	models.CalculateResponse
+//	@Failure		422		{object}	models.ErrResponse
+//	@Router			/calculate [post]
 func WrapperHandlerPostExpression(db *sqlite.Storage, calc *calculator.Calculator) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var req models.CalculateRequest

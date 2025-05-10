@@ -104,10 +104,31 @@ func (a *Application) Run() {
 	e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
 	e.Static("/docs", "docs")
-	e.GET("/swagger", echoSwagger.WrapHandler)
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.POST("/api/v1/register", authHandler.Register)
-	e.POST("/api/v1/login", authHandler.Login)
+	//	@Summary		Register new user
+	//	@Description	Register new user
+	//	@Tags			auth
+	//	@Accept			json
+	//	@Produce		json
+	//	@Param			data	body		auth.RegisterRequest	true	"User data"
+	//	@Success		200		{object}	model.User
+	//	@Failure		400		{object}	echo.HTTPError
+	//	@Failure		500		{object}	echo.HTTPError
+	//	@Router			/api/v1/register [post]
 
+	e.POST("/api/v1/login", authHandler.Login)
+	//	@Summary		Login user
+	//	@Description	Login user
+	//	@Tags			auth
+	//	@Accept			json
+	//	@Produce		json
+	//	@Param			data	body		auth.LoginRequest	true	"User data"
+	//	@Success		200		{string}	token
+	//	@Failure		400		{object}	echo.HTTPError
+	//	@Failure		401		{object}	echo.HTTPError
+	//	@Failure		500		{object}	echo.HTTPError
+	//	@Router			/api/v1/login [post]
 	authorized := e.Group("/api/v1/")
 	authorized.Use(authService.JWTMiddleware())
 
