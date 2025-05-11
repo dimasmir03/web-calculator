@@ -60,7 +60,7 @@ docker-compose up --build
 ### 2. Запуск без Docker
 
 #### Linux/macOS (bash)
-z
+
 ```bash
 # Сервер (оркестратор)
 git clone https://github.com/dimasmir03/web-calculator.git
